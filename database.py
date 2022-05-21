@@ -1,9 +1,9 @@
-username1 = 'macsim05.macsim@mail.ru'
-password1 = 'Vevahu51'
+username = 'macsim05.macsim@mail.ru'
+password = 'Vevahu51'
 
 
-username = 'flipsud'
-password = 'vevahu51'
+username1 = 'flipsud'
+password1 = 'vevahu51'
 
 
 username2 = 'flipsidebeats'
