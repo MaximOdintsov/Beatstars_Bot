@@ -1,94 +1,100 @@
 import pyautogui
-import time, random
+import time
+import random
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 from database import username, password
 
-from colorama import init
 from colorama import Fore, Back, Style
 
 
-browser = webdriver.Chrome()
+browser = webdriver.Firefox()
 
-# ЛОГИНИМСЯ
+# авторизовывается
 
 
-def login():
+def authorization():
     try:
-        print(Fore.BLUE, Back.BLACK)
         # открываем страницу авторизации в битстарс
         browser.get('https://oauth.beatstars.com/')
-        print('Открыл битстарс')
+        print(Fore.BLUE, Back.BLACK, 'Открыл битстарс')
         time.sleep(random.randrange(2, 5))
+
 
         # вводим username
         username_input = browser.find_element(By.ID, 'input-username')
         username_input.click()
         time.sleep(random.randrange(4, 9))
+
+        # вводим пароль (набирается с клавиатуры)
         pyautogui.typewrite(username)
         print('Ввёл логин')
         time.sleep(random.randrange(1, 3))
+
 
         # вводим password
         password_input = browser.find_element(By.ID, 'input-password')
         password_input.click()
         time.sleep(random.randrange(5, 10))
+
+        # вводим пароль (набирается с клавиатуры)
         pyautogui.typewrite(password)
         print('Ввёл пароль')
         time.sleep(random.randrange(2, 4))
 
+
         # нажимаем на кнопку "Login"
-        button_login = browser.find_element(By.XPATH, '/html/body/oauth-root/ng-component/section/div[2]/div[2]/form/bs-square-button/button')
-        button_login.click()
+        login_button = browser.find_element(By.XPATH, '/html/body/oauth-root/ng-component/section/div[2]/div[2]/form/bs-square-button/button')
+        login_button.click()
         print('Вошёл в аккаунт')
-        time.sleep(random.randrange(10, 15))
+        time.sleep(random.randrange(60, 75))
+
 
         # соглашаемся с куки
         cookie_consent = browser.find_element(By.XPATH, '/html/body/mp-root/mp-snackbar-info-messages/div/mp-cookies-snackbar/mp-snackbar-info-message-template/div/button')
         cookie_consent.click()
         print('Согласился с cookie')
-        time.sleep(random.randrange(2, 4))
+        time.sleep(random.randrange(4, 8))
         print('Ну что, послушаем немного музыки?')
+
     except Exception as ex:
-        print(Fore.RED, ex)
+        print(Fore.RED, 'Произошла какя-то ошибка, закрываю браузер.')
+        print(ex)
         browser.close()
         browser.quit()
 
-# открываем вкладку "Топ Чарты"
+# открывает фид
 
 
-def top_charts():
+def open_feed():
     try:
-        print(Fore.CYAN, 'Открываю Топ чарты')
-        time.sleep(1)
-        browser.get('https://www.beatstars.com/top-charts')
-        time.sleep(random.randrange(3, 5))
-
-        # функция
-        playing_promo_beats()
+        browser.get('https://www.beatstars.com/feed')
+        time.sleep(random.randrange(20, 25))
+        print(Fore.RED, 'Открыл фид')
     except Exception as ex:
-        print(Fore.RED, ex)
+        print(Fore.RED, 'Произошла какя-то ошибка, закрываю браузер.')
+        print(ex)
         browser.close()
         browser.quit()
 
-# нажимаем на КНОПКУ включения бита (рекламного)
+# нажимает на кнопку воспроизведения бита из фида
 
 
-def playing_promo_beats():
+def play_beat():
     try:
-        print('Включаю музыку для тебя...')
-        time.sleep(1)
-        play_promo_beat = browser.find_element(By.XPATH, '/html/body/mp-root/div/div/ng-component/mp-internal-page-tracks-wrapper/bs-container-grid[3]/mp-wrapper-list-holder-section/section/mp-list-card-track/div/mp-list-card-template/div/mp-card-figure-track[1]/mp-card-figure-template/figure/div/div[2]/div[2]/mp-button-play-track-on-search')
-        play_promo_beat.click()
+        WebDriverWait(browser, timeout=random.randrange(10, 20)).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.feed:nth-child(2) > mp-track-post:nth-child(1) > mp-feed-card:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > bs-button-play-item:nth-child(1) > button:nth-child(1)"))).click()
+        print('Включил бит')
         time.sleep(random.randrange(15, 20))
     except Exception as ex:
-        print(Fore.RED, ex)
-        browser.close()
-        browser.quit()
+        print(Fore.RED, 'Произошла какая-то ошибка, запускаю алгорит заново.')
+        print(ex)
+        open_feed()
 
-# открываем описание бита
+# открывает описание бита
 
 
 def open_beat():
@@ -96,33 +102,58 @@ def open_beat():
         opening_beat = browser.find_element(By.XPATH, '//*[@id="player-container"]/div/div[1]/div[1]/bs-playable-item-info/div[2]/div[1]/a')
         opening_beat.click()
         print(Fore.GREEN, 'Открыл описание бита')
-        time.sleep(random.randrange(4, 10))
-
-        # функция
-        like()
+        time.sleep(random.randrange(10, 15))
     except Exception as ex:
-        print(Fore.RED, ex)
-        browser.close()
-        browser.quit()
+        print(Fore.RED, 'Произошла какая-то ошибка, запускаю алгорит заново')
+        print(ex)
+        open_feed()
 
-# ставим лайк
+# лайкает бит
 
 
 def like():
     try:
-        like_the_beat = browser.find_element(By.XPATH, '/html/body/mp-root/div/div/ng-component/mp-wrapper-member-track-content/mp-member-content-item-template/bs-container-grid/div[1]/section/mp-member-content-item-header-template/div[4]/mp-button-like-action-template')
-        like_the_beat.click()
-        print('Поставил лайк, перехожу в профиль!')
+        like_button = browser.find_element(By.XPATH, '/html/body/mp-root/div/div/ng-component/mp-wrapper-member-track-content/mp-member-content-item-template/bs-container-grid/div[1]/section/mp-member-content-item-header-template/div[4]/mp-button-like-action-template')
+        like_button.click()
+        print('Поставил лайк')
         time.sleep(random.randrange(5, 10))
-
-        # функция
-        open_profile()
     except Exception as ex:
-        print(Fore.RED, ex)
-        browser.close()
-        browser.quit()
+        print(Fore.RED, 'Произошла какая-то ошибка, запускаю алгоритм заново.')
+        print(ex)
 
-# переходим в профиль и подписываемся (нужно будет разделить функции)
+# ищет людей, которые лайкнули бит
+
+
+def liked():
+    try:
+        global profile_urls
+
+        likes = browser.find_element(By.XPATH, '/html/body/mp-root/div/div/ng-component/mp-wrapper-member-track-content/mp-member-content-item-template/bs-container-grid/div[1]/section/mp-member-content-item-header-template/div[4]/mp-button-like-action-template/mp-button-item-action-icon-template/span')
+        likes.click()
+        print('Ищу тех, кто поставил лайк!')
+        time.sleep(random.randrange(7, 14))
+
+        # ищет элементы только в окне с теми, кто лайкнул бит
+        window_with_liked = browser.find_element(By.CLASS_NAME, 'body-container')
+
+        # ищет элементы с тегом "а"
+        elements = window_with_liked.find_elements(By.TAG_NAME, 'a')
+
+        # собирает ссылки на элементы только 'href'
+        profile_urls = [item.get_attribute('href') for item in elements]
+        print('Спарсил ссылки на профили: ', profile_urls)
+
+        for url in profile_urls:
+            browser.get(url)
+            time.sleep(random.randrange(10, 15))
+            subscription()
+
+    except Exception as ex:
+        print(Fore.RED, 'Произошла какая-то ошибка, запускаю алгоритм заново.')
+        print(ex)
+        open_feed()
+
+# переходит в профиль пользователя с бита
 
 
 def open_profile():
@@ -130,67 +161,67 @@ def open_profile():
         go_to_the_profile = browser.find_element(By.XPATH, '/html/body/mp-root/div/div/ng-component/mp-wrapper-member-track-content/mp-member-content-item-template/bs-container-grid/div[1]/section/mp-member-content-item-header-template/div[2]/mp-caption-figure-template[2]/a')
         go_to_the_profile.click()
         print('Тааак-с, посмотрим, что тут у нас...')
-        time.sleep(random.randrange(7, 12))
-
-        # функция
-        following()
+        time.sleep(random.randrange(15, 25))
     except Exception as ex:
-        print(Fore.RED, ex)
+        print(Fore.RED, 'произошла какая-то ошибки, запускаю алгоритм заново.')
+        print(ex)
         browser.close()
         browser.quit()
 
-# подписываемся на профиль
+# подписывается
 
 
-def following():
+def subscription():
     try:
-        time.sleep(random.randrange(1))
-        follow = browser.find_element(By.XPATH, '/html/body/mp-root/div/div/ng-component/ng-component/mp-wrapper-member-profile-content/main/bs-container-grid/mp-profile-header/mp-profile-visitor-actions/div/mp-button-follow-text-template/mp-button-item-action-text-template')
-        follow.click()
-        print('Подписался на этого пользователя!')
-        time.sleep(random.randrange(5, 15))
-    except:
-        print(Fore.RED, 'Произошла какая-то неведомая херня, подписаться не удалось :(')
-        next_beat()
-        time.sleep(random.randrange(2,4))
 
-# переходим на следующий бит
-
-
-def next_beat():
-    try:
-        print(Fore.YELLOW, 'Переключаюсь на следующий бит...')
-        time.sleep(1)
-        next_button = browser.find_element(By.XPATH, '/html/body/mp-root/mp-player-wrapper/bs-player/div/div/div[2]/bs-player-next/button')
-        next_button.click()
-        print('Переключился!')
-        time.sleep(random.randrange(7,14))
+        follow_button = browser.find_element(By.XPATH, '/html/body/mp-root/div/div/ng-component/ng-component/mp-wrapper-member-profile-content/main/bs-container-grid/mp-profile-header/mp-profile-visitor-actions/div/mp-button-follow-text-template/mp-button-item-action-text-template')
+        follow_button.click()
+        print('Оформил подписочку на...')
+        time.sleep(random.randrange(30, 45))
     except Exception as ex:
-        print(Fore.RED, ex)
-        browser.close()
-        browser.quit()
+        print(Fore.RED, 'Произошла какая-то ошибка, запускаю алгоритм заново.')
+        print(ex)
+        open_feed()
 
 
-login()
+# пишет комментарии (нужно рассчитать так, чтоб было не более 2 комментов в течение 5 мин)
 
-ad_beats = True
-error = False
+def comments():
+    comment = browser.find_element(By.XPATH, '/html/body/mp-root/div/div/ng-component/mp-wrapper-member-track-content/mp-member-content-item-template/bs-container-grid/div[3]/div[2]/mp-comments-panel-box/mp-open-close-panel-template/div/article/div[2]/mp-create-new-comment-input/mp-musician-autocomplete-wrapper/mp-autocomplete-dropdown-template/div/div[2]/mp-compose-new-message-input/form/div[2]/input')
+    comment.send_keys('')
+# сделать список комментов, чтоб были рандомными
 
-while ad_beats:
-    if error == False:
-        top_charts()
+# переходит назад
+
+
+def back():
+    try:
+        back_button = browser.back()
+        time.sleep(random.randrange(2, 4))
+    except Exception as ex:
+        print(Fore.RED, 'Произошла какая-то ошибка, запускаю алгоритм заново.')
+        print(ex)
+        open_feed()
+
+
+listen_beats = True
+
+
+# функции
+
+authorization()
+while listen_beats:
+    if listen_beats == True:
+        open_feed()
+        play_beat()
         open_beat()
-        next_beat()
-        open_beat()
-
+        like()
+        open_profile()
+        subscription()
+        back()
+        liked()
     else:
-        error = True
+        listen_beats = False
         browser.close()
         browser.quit()
-
-
-print(Fore.RED)
-
-# закрываем браузер
-browser.close()
-browser.quit()
+        print(Fore.RED, 'Что-то пошло не так, скрипт окончил свою работу.')
