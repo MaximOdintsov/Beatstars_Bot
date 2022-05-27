@@ -6,222 +6,400 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from comments import list
 
-from database import username, password
+from threading import Thread
+
+from database import username, password, username2, password2
 
 from colorama import Fore, Back, Style
 
+list_comments = None
 
-browser = webdriver.Firefox()
-
-# авторизовывается
-
-
-def authorization():
-    try:
-        # открываем страницу авторизации в битстарс
-        browser.get('https://oauth.beatstars.com/')
-        print(Fore.BLUE, Back.BLACK, 'Открыл битстарс')
-        time.sleep(random.randrange(2, 5))
+url = None
 
 
-        # вводим username
-        username_input = browser.find_element(By.ID, 'input-username')
-        username_input.click()
-        time.sleep(random.randrange(4, 9))
+class Beatstars_Bot():
+    """Класс работы бота"""
 
-        # вводим пароль (набирается с клавиатуры)
-        pyautogui.typewrite(username)
-        print('Ввёл логин')
-        time.sleep(random.randrange(1, 3))
+    def __init__(self, username, password):
+        """Переменные для входа в аккаунт"""
 
+        self.username = username
+        self.password = password
+        self.browser = webdriver.Firefox()
+        print(Fore.LIGHTMAGENTA_EX, 'БОТ НАЧАЛ АВТОРИЗАЦИЮ')
+        # АВТОРИЗАЦИЯ
 
-        # вводим password
-        password_input = browser.find_element(By.ID, 'input-password')
-        password_input.click()
-        time.sleep(random.randrange(5, 10))
+    def oauth_beatstars(self):
+        """Открывает страницу авторизации в битстарс"""
 
-        # вводим пароль (набирается с клавиатуры)
-        pyautogui.typewrite(password)
-        print('Ввёл пароль')
-        time.sleep(random.randrange(2, 4))
+        try:
+            self.browser.get('https://oauth.beatstars.com/')
+            print(Fore.LIGHTWHITE_EX, Back.BLACK, 'Открыл битстарс')
+            time.sleep(random.randrange(5, 15))
 
+            self.input_username()
+        except:
+            print(Fore.LIGHTRED_EX, 'Не получилось открыть битстарс, запускаю авторизацию заново')
+            time.sleep(10)
+            self.oauth_beatstars()
 
-        # нажимаем на кнопку "Login"
-        login_button = browser.find_element(By.XPATH, '/html/body/oauth-root/ng-component/section/div[2]/div[2]/form/bs-square-button/button')
-        login_button.click()
-        print('Вошёл в аккаунт')
-        time.sleep(random.randrange(60, 75))
+    def input_username(self):
+        """Вводит имя пользователя"""
 
+        try:
+            username_input = self.browser.find_element(By.ID, 'input-username')
+            username_input.click()
+            time.sleep(random.randrange(5, 10))
+            # вводим юзернейм с клавиатуры (в будущем заменить на код из JS)
+            pyautogui.typewrite(username)
+            print(Fore.WHITE, ' Ввёл логин')
+            time.sleep(random.randrange(1, 3))
 
-        # соглашаемся с куки
-        cookie_consent = browser.find_element(By.XPATH, '/html/body/mp-root/mp-snackbar-info-messages/div/mp-cookies-snackbar/mp-snackbar-info-message-template/div/button')
-        cookie_consent.click()
-        print('Согласился с cookie')
-        time.sleep(random.randrange(4, 8))
-        print('Ну что, послушаем немного музыки?')
+            self.input_password()
+        except:
+            print(Fore.LIGHTRED_EX, 'Не получилось ввести имя пользователя, запускаю авторизацию заново')
+            time.sleep(10)
+            self.oauth_beatstars()
 
-    except Exception as ex:
-        print(Fore.RED, 'Произошла какя-то ошибка, закрываю браузер.')
-        print(ex)
-        browser.close()
-        browser.quit()
+    def input_password(self):
+        """Вводит пароль"""
 
-# открывает фид
+        try:
+            password_input = self.browser.find_element(By.ID, 'input-password')
+            password_input.click()
+            time.sleep(random.randrange(5, 10))
+            # вводим пароль с клавиатуры (в будущем заменить на код из JS)
+            pyautogui.typewrite(password)
+            print(Fore.WHITE, ' Ввёл пароль')
+            time.sleep(random.randrange(1, 3))
 
+            self.login_button()
+        except:
+            print(Fore.LIGHTRED_EX, 'Не получилось ввести пароль, запускаю авторизацию заново')
+            time.sleep(10)
+            self.oauth_beatstars()
 
-def open_feed():
-    try:
-        browser.get('https://www.beatstars.com/feed')
-        time.sleep(random.randrange(20, 25))
-        print(Fore.RED, 'Открыл фид')
-    except Exception as ex:
-        print(Fore.RED, 'Произошла какя-то ошибка, закрываю браузер.')
-        print(ex)
-        browser.close()
-        browser.quit()
+    def login_button(self):
+        """Нажимает на кнопку 'Войти' """
 
-# нажимает на кнопку воспроизведения бита из фида
+        try:
+            login_button = self.browser.find_element(By.XPATH,
+                                                     '/html/body/oauth-root/ng-component/section/div[2]/div[2]/form/bs-square-button/button')
+            login_button.click()
+            print(Fore.LIGHTWHITE_EX, ' Вошёл в аккаунт')
+            time.sleep(random.randrange(40, 45))
 
+            self.consent_to_cookies()
+        except:
+            print(Fore.LIGHTRED_EX, 'Не получилось нажать на кнопку "Войти", запускаю алгоритм заново')
+            time.sleep(10)
+            self.oauth_beatstars()
 
-def play_beat():
-    try:
-        WebDriverWait(browser, timeout=random.randrange(10, 20)).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.feed:nth-child(2) > mp-track-post:nth-child(1) > mp-feed-card:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > bs-button-play-item:nth-child(1) > button:nth-child(1)"))).click()
-        print('Включил бит')
-        time.sleep(random.randrange(15, 20))
-    except Exception as ex:
-        print(Fore.RED, 'Произошла какая-то ошибка, запускаю алгорит заново.')
-        print(ex)
-        open_feed()
+    def consent_to_cookies(self):
+        """Нажимает на кнопку 'Согласиться с куки' """
 
-# открывает описание бита
+        try:
+            cookie_consent = self.browser.find_element(By.XPATH,
+                                                       '/html/body/mp-root/mp-snackbar-info-messages/div/mp-cookies-snackbar/mp-snackbar-info-message-template/div/button')
+            cookie_consent.click()
+            print(Fore.WHITE, ' Согласился с cookie')
+            time.sleep(random.randrange(2, 4))
+        except:
+            print(Fore.LIGHTRED_EX, 'Не получилось согласиться с куки, открываю эту страницу заново')
+            time.sleep(10)
+            self.homepage()
 
+    def homepage(self):
+        """Открывает начальную страницу битстарс"""
 
-def open_beat():
-    try:
-        opening_beat = browser.find_element(By.XPATH, '//*[@id="player-container"]/div/div[1]/div[1]/bs-playable-item-info/div[2]/div[1]/a')
-        opening_beat.click()
-        print(Fore.GREEN, 'Открыл описание бита')
-        time.sleep(random.randrange(10, 15))
-    except Exception as ex:
-        print(Fore.RED, 'Произошла какая-то ошибка, запускаю алгорит заново')
-        print(ex)
-        open_feed()
+        try:
+            self.browser.get('https://beatstars.com/')
+            print(Fore.WHITE, 'Открыл начальную страницу, т.к. не получилось согласиться с куки')
+            time.sleep(random.randrange(5, 15))
 
-# лайкает бит
+            self.consent_to_cookies()
+        except:
+            print(Fore.LIGHTRED_EX, 'Снова не получилось согласиться с куки, запускаю алгоритм заново')
+            self.close_beatstars()
+            time.sleep(10)
+            self.oauth_beatstars()
+            # ОСНОВНАЯ РАБОТА БОТА
 
+    def open_feed(self):
+        """Открывает фид"""
 
-def like():
-    try:
-        like_button = browser.find_element(By.XPATH, '/html/body/mp-root/div/div/ng-component/mp-wrapper-member-track-content/mp-member-content-item-template/bs-container-grid/div[1]/section/mp-member-content-item-header-template/div[4]/mp-button-like-action-template')
-        like_button.click()
-        print('Поставил лайк')
-        time.sleep(random.randrange(5, 10))
-    except Exception as ex:
-        print(Fore.RED, 'Произошла какая-то ошибка, запускаю алгоритм заново.')
-        print(ex)
+        try:
+            self.browser.get('https://www.beatstars.com/feed')
+            print(Fore.LIGHTMAGENTA_EX, ' БОТ НАЧАЛ РАБОТУ!')
+            time.sleep(random.randrange(10, 20))
 
-# ищет людей, которые лайкнули бит
+            self.play_beat()
+        except Exception as ex:
+            print(Fore.LIGHTRED_EX, 'Не получилось открыть фид, пробую заново.')
+            print(Fore.RED, 'Описание ошибки: ', ex)
+            self.open_feed()
 
+    def play_beat(self):
+        """Нажимает на кнопку включения бита"""
 
-def liked():
-    try:
-        global profile_urls
+        try:
+            play_button = self.browser.find_element(By.XPATH,
+                                                    '/html/body/mp-root/div/div/ng-component/mp-feed/div/section[2]/div[1]/mp-track-post/mp-feed-card/div/div[2]/div[1]/div[2]/div[1]/bs-button-play-item/button')
+            play_button.click()
+            print(Fore.GREEN, 'Включил бит')
+            time.sleep(random.randrange(5, 10))
 
-        likes = browser.find_element(By.XPATH, '/html/body/mp-root/div/div/ng-component/mp-wrapper-member-track-content/mp-member-content-item-template/bs-container-grid/div[1]/section/mp-member-content-item-header-template/div[4]/mp-button-like-action-template/mp-button-item-action-icon-template/span')
-        likes.click()
-        print('Ищу тех, кто поставил лайк!')
-        time.sleep(random.randrange(7, 14))
+            self.open_beat()
+        except Exception as ex:
+            print(Fore.LIGHTRED_EX, 'Не получилось нажать на кнопку включения бита, запускаю алгоритм заново.')
+            print(Fore.RED, 'Описание ошибки: ', ex)
+            self.open_feed()
 
-        # ищет элементы только в окне с теми, кто лайкнул бит
-        window_with_liked = browser.find_element(By.CLASS_NAME, 'body-container')
+    def open_beat(self):
+        """Открывает описание бита"""
 
-        # ищет элементы с тегом "а"
-        elements = window_with_liked.find_elements(By.TAG_NAME, 'a')
-
-        # собирает ссылки на элементы только 'href'
-        profile_urls = [item.get_attribute('href') for item in elements]
-        print('Спарсил ссылки на профили: ', profile_urls)
-
-        for url in profile_urls:
-            browser.get(url)
+        try:
+            opening_beat = self.browser.find_element(By.XPATH,
+                                                     '//*[@id="player-container"]/div/div[1]/div[1]/bs-playable-item-info/div[2]/div[1]/a')
+            opening_beat.click()
+            print(Fore.GREEN, 'Открыл описание бита')
             time.sleep(random.randrange(10, 15))
-            subscription()
 
-    except Exception as ex:
-        print(Fore.RED, 'Произошла какая-то ошибка, запускаю алгоритм заново.')
-        print(ex)
-        open_feed()
+            self.like()
+        except Exception as ex:
+            print(Fore.LIGHTRED_EX, 'Не получилось открыть описание бита, запускаю алгорит заново')
+            print(Fore.RED, 'Описание ошибки: ', ex)
+            self.open_feed()
 
-# переходит в профиль пользователя с бита
+    def like(self):
+        """Нажимает на кнопку лайка в описании бита"""
+
+        try:
+            like_button = self.browser.find_element(By.XPATH,
+                                                    '/html/body/mp-root/div/div/ng-component/mp-wrapper-member-track-content/mp-member-content-item-template/bs-container-grid/div[1]/section/mp-member-content-item-header-template/div[4]/mp-button-like-action-template')
+            like_button.click()
+            print(Fore.LIGHTGREEN_EX, 'Поставил', Fore.LIGHTBLUE_EX, 'лайк')
+            time.sleep(random.randrange(3, 7))
+
+            self.comments()
+        except Exception as ex:
+            print(Fore.LIGHTRED_EX, 'Не получилось поставить лайк, пишу комментарий.')
+            print(Fore.RED, 'Описание ошибки: ', ex)
+            self.comments()
+
+    def comment(self):
+        """Определяет рандомный комментарий"""
+
+        global list_comments
+
+        list_comments = random.choice(list)
+
+    def comments(self):
+        """Печатает и отправляет комментарии"""
+
+        try:
+            self.comment()
+
+            # нажимает на поле ввода и вписывает рандомный комментарий
+            input_comments = self.browser.find_element(By.XPATH,
+                                                       '/html/body/mp-root/div/div/ng-component/mp-wrapper-member-track-content/mp-member-content-item-template/bs-container-grid/div[3]/div[2]/mp-comments-panel-box/mp-open-close-panel-template/div/article/div[2]/mp-create-new-comment-input/mp-musician-autocomplete-wrapper/mp-autocomplete-dropdown-template/div/div[2]/mp-compose-new-message-input/form/div[2]/input')
+            time.sleep(random.randrange(5, 10))
+            input_comments.send_keys(list_comments)
+            print(Fore.LIGHTGREEN_EX, "Ввёл", Fore.LIGHTBLUE_EX, " комментарий:\n", Fore.LIGHTYELLOW_EX, list_comments)
+
+            # нажимает на кнопку отправки комментария
+            comment_button = self.browser.find_element(By.XPATH,
+                                                       '/html/body/mp-root/div/div/ng-component/mp-wrapper-member-track-content/mp-member-content-item-template/bs-container-grid/div[3]/div[2]/mp-comments-panel-box/mp-open-close-panel-template/div/article/div[2]/mp-create-new-comment-input/mp-musician-autocomplete-wrapper/mp-autocomplete-dropdown-template/div/div[2]/mp-compose-new-message-input/form/bs-square-button')
+            comment_button.click()
+            print(Fore.LIGHTBLUE_EX, 'Отправил этот комментарий!')
+            time.sleep(random.randrange(5, 15))
+
+            self.open_profile()
+        except Exception as ex:
+            print(Fore.LIGHTRED_EX, 'Не получилось отправить комментарий, открываю профиль')
+            print(Fore.RED, 'Описание ошибки: ', ex)
+            self.open_profile()
+
+    def open_profile(self):
+        """Открывает профиль"""
+
+        try:
+            go_to_the_profile = self.browser.find_element(By.XPATH,
+                                                          '/html/body/mp-root/div/div/ng-component/mp-wrapper-member-track-content/mp-member-content-item-template/bs-container-grid/div[1]/section/mp-member-content-item-header-template/div[2]/mp-caption-figure-template[2]/a')
+            go_to_the_profile.click()
+            print(Fore.GREEN, u'Открыл профиль, сейчас посмотрим, что тут у нас😑')
+            time.sleep(random.randrange(15, 25))
+
+            self.subscription()
+        except Exception as ex:
+            print(Fore.LIGHTRED_EX, 'Не получилось открыть профиль, запускаю алгоритм заново.')
+            print(Fore.RED, 'Описание ошибки: ', ex)
+            self.open_feed()
+
+    def subscription(self):
+        """Подписывается на пользователя"""
+
+        try:
+            follow_button = self.browser.find_element(By.XPATH,
+                                                      '/html/body/mp-root/div/div/ng-component/ng-component/mp-wrapper-member-profile-content/main/bs-container-grid/mp-profile-header/mp-profile-visitor-actions/div/mp-button-follow-text-template/mp-button-item-action-text-template')
+            follow_button.click()
+            print(Fore.LIGHTGREEN_EX, 'Оформил', Fore.LIGHTBLUE_EX, 'подписку')
+            time.sleep(random.randrange(5, 15))
+
+            self.back()
+        except Exception as ex:
+            print(Fore.LIGHTRED_EX, 'Подписаться не получилось, нажимаю кнопку "Назад".')
+            print(Fore.RED, 'Описание ошибки: ', ex)
+
+            # хз, оставить или нет
+            self.back()
+
+    def back(self):
+        """Нажимает на кнопку 'Назад' в браузере"""
+
+        try:
+            self.browser.back()
+            time.sleep(random.randrange(10, 15))
+            print(Fore.GREEN, 'Нажал на кнопку "Назад"')
+
+            self.open_liked()
+        except Exception as ex:
+            print(Fore.LIGHTRED_EX, 'Не получилось нажать на кнопку "Назад", запускаю алгоритм заново.')
+            print(Fore.RED, 'Описание ошибки: ', ex)
+            self.open_feed()
+
+    def open_liked(self):
+        """Открывает меню с лайкнувшими"""
+        try:
+            likes = self.browser.find_element(By.XPATH,
+                                              '/html/body/mp-root/div/div/ng-component/mp-wrapper-member-track-content/mp-member-content-item-template/bs-container-grid/div[1]/section/mp-member-content-item-header-template/div[4]/mp-button-like-action-template/mp-button-item-action-icon-template/span')
+            likes.click()
+            print(Fore.GREEN, 'Открыл меню с лайкнувшими!')
+            time.sleep(random.randrange(7, 15))
+
+            self.parsing()
+        except Exception as ex:
+            print(Fore.LIGHTRED_EX, 'Не получилось открыть меню лайкнувших, запускаю цикл заново.')
+            print(Fore.RED, 'Описание ошибки: ', ex)
+            self.open_feed()
+
+    def parsing(self):
+        """Парсит ссылки на тех, кто лайкнул бит"""
+
+        try:
+
+            # ищет элементы только в окне с теми, кто лайкнул бит
+            window_with_liked = self.browser.find_element(By.CLASS_NAME, 'body-container')
+
+            # ищет элементы с тегом "а"
+            elements = window_with_liked.find_elements(By.TAG_NAME, 'a')
+
+            # собирает ссылки на элементы только 'href'
+            self.profile_urls = [item.get_attribute('href') for item in elements]
+            print(Fore.LIGHTCYAN_EX, 'Спарсил ссылки на профили: ', Fore.LIGHTYELLOW_EX, self.profile_urls)
+
+            self.cycle_to_liked()
+
+        except Exception as ex:
+            print(Fore.LIGHTRED_EX,
+                  'Не получилось спарсить пользователей, которые лайкнули бит, запускаю алгоритм заново.')
+            print(Fore.RED, 'Описание ошибки: ', ex)
+            self.open_feed()
+
+    def cycle_to_liked(self):
+        """Запускает цикл подписки на лайкнувших"""
+
+        global url
+
+        try:
+            for url in self.profile_urls:
+                self.browser.get(url)
+                time.sleep(random.randrange(10, 15))
+                # func
+                self.subscription_to_liked()
 
 
-def open_profile():
-    try:
-        go_to_the_profile = browser.find_element(By.XPATH, '/html/body/mp-root/div/div/ng-component/mp-wrapper-member-track-content/mp-member-content-item-template/bs-container-grid/div[1]/section/mp-member-content-item-header-template/div[2]/mp-caption-figure-template[2]/a')
-        go_to_the_profile.click()
-        print('Тааак-с, посмотрим, что тут у нас...')
-        time.sleep(random.randrange(15, 25))
-    except Exception as ex:
-        print(Fore.RED, 'произошла какая-то ошибки, запускаю алгоритм заново.')
-        print(ex)
-        browser.close()
-        browser.quit()
+        except Exception as ex:
+            print(Fore.LIGHTRED_EX,
+                  'Не получилось запустить цикл подписки на пользователей, которые лайкнули бит, запускаю алгоритм заново.')
+            print(Fore.RED, 'Описание ошибки: ', ex)
+            self.open_feed()
 
-# подписывается
+    def subscription_to_liked(self):
+        """Подписывается на лайкнувших"""
+
+        try:
+
+            follow_button = self.browser.find_element(By.XPATH,
+                                                      '/html/body/mp-root/div/div/ng-component/ng-component/mp-wrapper-member-profile-content/main/bs-container-grid/mp-profile-header/mp-profile-visitor-actions/div/mp-button-follow-text-template/mp-button-item-action-text-template')
+            follow_button.click()
+            print(Fore.LIGHTGREEN_EX, 'Оформил', Fore.LIGHTBLUE_EX, 'подписочку', Fore.LIGHTGREEN_EX, 'на:',
+                  Fore.LIGHTYELLOW_EX, url)
+
+            time.sleep(random.randrange(30, 45))
+
+        except Exception as ex:
+            print(Fore.LIGHTRED_EX, 'Не получилось подписаться на "', url,
+                  '", подписываюсь на следующего пользователя.')
+            print(Fore.RED, 'Описание ошибки: ', ex)
+            time.sleep(10)
+
+    def close_beatstars(self):
+        """Открывает страницу гугл, якобы для закрытия битстарса"""
+
+        self.browser.get('https://google.com/')
+        print(Fore.LIGHTYELLOW_EX, 'Бот закрыл битстарс')
+
+    def sleep(self):
+        """Рандомизирует переменные сна"""
+
+        # global sleep_1_cycle
+        # global sleep_day_cycle
+
+        self.sleep_1_cycle = random.randrange(3500, 5500)
+        self.sleep_day_cycle = random.randrange(30000, 45000)
+
+    def start_bot(self):
+        """Запускает бота в цикл"""
+
+        start_bot = True
+
+        self.oauth_beatstars()
+
+        while start_bot:
+            """Бесконечный цикл"""
+
+            self.sleep()
+
+            for o in range(1, 2):
+                """Выполняется 1 раз в день, засыпает на 8-12 часов"""
+
+                self.sleep()
+
+                for number in range(1, random.randrange(4, 8)):
+                    """Выполняется 4, 6 раз в день, каждый раз засыпает на 1-1,5 часа"""
+
+                    self.sleep()
+
+                    for i in range(1, random.randrange(5, 8)):
+                        """Сам цикл, выполняется 3-7 раз за 1 цикл"""
+
+                        self.open_feed()
+                        print(Fore.LIGHTMAGENTA_EX, 'Цикл №', i, 'успешно завершён! Продолжаем..')
+                        time.sleep(random.randrange(5, 20))
+
+                    self.close_beatstars()
+                    print(Fore.LIGHTMAGENTA_EX, 'Цикл №', number, 'завершён. Бот продолжит работу через',
+                          Fore.LIGHTRED_EX, self.sleep_1_cycle, Fore.LIGHTMAGENTA_EX, 'секунд!')
+                    time.sleep(self.sleep_1_cycle)
+
+            self.close_beatstars()
+            print(Fore.LIGHTMAGENTA_EX, 'Бот полностью завершил свою работу. Он проснется через', Fore.LIGHTRED_EX,
+                  self.sleep_day_cycle, Fore.LIGHTMAGENTA_EX, 'секунд')
+            time.sleep(self.sleep_day_cycle)
 
 
-def subscription():
-    try:
-
-        follow_button = browser.find_element(By.XPATH, '/html/body/mp-root/div/div/ng-component/ng-component/mp-wrapper-member-profile-content/main/bs-container-grid/mp-profile-header/mp-profile-visitor-actions/div/mp-button-follow-text-template/mp-button-item-action-text-template')
-        follow_button.click()
-        print('Оформил подписочку на...')
-        time.sleep(random.randrange(30, 45))
-    except Exception as ex:
-        print(Fore.RED, 'Произошла какая-то ошибка, запускаю алгоритм заново.')
-        print(ex)
-        open_feed()
-
-
-# пишет комментарии (нужно рассчитать так, чтоб было не более 2 комментов в течение 5 мин)
-
-def comments():
-    comment = browser.find_element(By.XPATH, '/html/body/mp-root/div/div/ng-component/mp-wrapper-member-track-content/mp-member-content-item-template/bs-container-grid/div[3]/div[2]/mp-comments-panel-box/mp-open-close-panel-template/div/article/div[2]/mp-create-new-comment-input/mp-musician-autocomplete-wrapper/mp-autocomplete-dropdown-template/div/div[2]/mp-compose-new-message-input/form/div[2]/input')
-    comment.send_keys('')
-# сделать список комментов, чтоб были рандомными
-
-# переходит назад
-
-
-def back():
-    try:
-        back_button = browser.back()
-        time.sleep(random.randrange(2, 4))
-    except Exception as ex:
-        print(Fore.RED, 'Произошла какая-то ошибка, запускаю алгоритм заново.')
-        print(ex)
-        open_feed()
-
-
-listen_beats = True
-
-
-# функции
-
-authorization()
-while listen_beats:
-    if listen_beats == True:
-        open_feed()
-        play_beat()
-        open_beat()
-        like()
-        open_profile()
-        subscription()
-        back()
-        liked()
-    else:
-        listen_beats = False
-        browser.close()
-        browser.quit()
-        print(Fore.RED, 'Что-то пошло не так, скрипт окончил свою работу.')
+BS_bot = Beatstars_Bot(username, password)
+BS_bot.start_bot()
