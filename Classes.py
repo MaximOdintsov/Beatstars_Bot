@@ -132,7 +132,7 @@ class Beatstars_Bot():
 
         try:
             self.browser.get('https://www.beatstars.com/feed')
-            print(Fore.LIGHTMAGENTA_EX, ' БОТ НАЧАЛ РАБОТУ!')
+            print(Fore.LIGHTMAGENTA_EX, ' Открыл фид!')
             time.sleep(random.randrange(10, 20))
 
             self.play_beat()
@@ -424,6 +424,7 @@ class Beatstars_Bot():
                     for i in range(0, random.randrange(7, 12)):
                         """Сам цикл, выполняется 4-7 раз за 1 цикл"""
 
+                        print(Fore.LIGHTMAGENTA_EX, 'Цикл №', i + 1, 'начал свою работу!')
                         self.open_feed()
                         print(Fore.LIGHTMAGENTA_EX, 'Цикл №', i + 1, 'успешно завершён! Продолжаем..')
                         time.sleep(random.randrange(5, 15))
