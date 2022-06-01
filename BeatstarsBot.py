@@ -1,84 +1,88 @@
-import pyautogui
 import time
 import random
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-from comments import list
+from comments import list_comments
 
-from threading import Thread
+# from threading import Thread
+# from selenium.webdriver.common.keys import Keys
+# from database import username, password, username2, password2
 
-from database import username, password, username2, password2
-
-from colorama import Fore, Back, Style
+from colorama import Fore, Back
 
 
-class Beatstars_Bot():
+class Beatstars_Bot:
     """Класс работы бота"""
 
-    def __init__(self, username, password):
+    def __init__(self, log, pas):
         """Переменные для входа в аккаунт"""
 
+        self.list_comment = None
+        self.profile_urls = None
+        self.profile_url = None
         self.sleep_1_cycle = None
-        self.list_comments = None
-        self.profile_urls = None  # мб нужно будет убрать
+        self.sleep_day_cycle = None
+        self.number = None
 
-        self.username = username
-        self.password = password
+        self.username = log
+        self.password = pas
         self.browser = webdriver.Firefox()
-        print(Fore.LIGHTMAGENTA_EX, 'БОТ НАЧАЛ АВТОРИЗАЦИЮ')
-        # АВТОРИЗАЦИЯ
+        print(Fore.LIGHTMAGENTA_EX, 'БОТ НАЧАЛ СВОЮ РАБОТУ')
 
     def oauth_beatstars(self):
         """Открывает страницу авторизации в битстарс"""
 
         try:
+            print(Fore.LIGHTMAGENTA_EX, 'БОТ НАЧАЛ АВТОРИЗАЦИЮ!')
             self.browser.get('https://oauth.beatstars.com/')
             print(Fore.LIGHTWHITE_EX, Back.BLACK, ' Открыл битстарс')
             time.sleep(random.randrange(5, 15))
 
             self.input_username()
-        except:
+        except Exception as ex:
             print(Fore.LIGHTRED_EX, 'Не получилось открыть битстарс, запускаю авторизацию заново')
-            time.sleep(10)
+            print(ex)
+            time.sleep(random.randrange(5, 10))
             self.oauth_beatstars()
 
     def input_username(self):
         """Вводит имя пользователя"""
 
         try:
-            username_input = self.browser.find_element(By.XPATH, '/html/body/oauth-root/ng-component/section/div[2]/div[2]/form/div[1]/bs-text-input/input')
+            username_input = self.browser.find_element(By.XPATH,
+                                                       '/html/body/oauth-root/ng-component/section/div[2]/div[2]/form/div[1]/bs-text-input/input')
             username_input.click()
             time.sleep(random.randrange(5, 10))
-            username_input.send_keys(username)
+            username_input.send_keys(self.username)
 
             print(Fore.WHITE, 'Ввёл логин')
             time.sleep(random.randrange(1, 3))
 
             self.input_password()
-        except:
+        except Exception as ex:
             print(Fore.LIGHTRED_EX, 'Не получилось ввести имя пользователя, запускаю авторизацию заново')
-            time.sleep(10)
+            print(ex)
+            time.sleep(random.randrange(5, 10))
             self.oauth_beatstars()
 
     def input_password(self):
         """Вводит пароль"""
 
         try:
-            password_input = self.browser.find_element(By.XPATH, '/html/body/oauth-root/ng-component/section/div[2]/div[2]/form/div[2]/bs-text-input/input')
+            password_input = self.browser.find_element(By.XPATH,
+                                                       '/html/body/oauth-root/ng-component/section/div[2]/div[2]/form/div[2]/bs-text-input/input')
             password_input.click()
             time.sleep(random.randrange(5, 10))
-            password_input.send_keys(password)
+            password_input.send_keys(self.password)
 
             print(Fore.WHITE, 'Ввёл пароль')
             time.sleep(random.randrange(1, 3))
 
             self.login_button()
-        except:
+        except Exception as ex:
             print(Fore.LIGHTRED_EX, 'Не получилось ввести пароль, запускаю авторизацию заново')
-            time.sleep(10)
+            print(ex)
+            time.sleep(random.randrange(5, 10))
             self.oauth_beatstars()
 
     def login_button(self):
@@ -88,14 +92,54 @@ class Beatstars_Bot():
             login_button = self.browser.find_element(By.XPATH,
                                                      '/html/body/oauth-root/ng-component/section/div[2]/div[2]/form/bs-square-button/button')
             login_button.click()
-            print(Fore.LIGHTWHITE_EX, 'Вошёл в аккаунт')
-            time.sleep(random.randrange(40, 45))
+            print(Fore.LIGHTWHITE_EX, 'Нажал на кнопку "Войти"')
+            time.sleep(random.randrange(55, 70))
 
             self.consent_to_cookies()
-        except:
+        except Exception as ex:
             print(Fore.LIGHTRED_EX, 'Не получилось нажать на кнопку "Войти", запускаю алгоритм заново')
-            time.sleep(10)
+            print(ex)
+            time.sleep(random.randrange(5, 10))
             self.oauth_beatstars()
+
+    def verification(self):
+        try:
+            print('Посмотри, пришло ли тебе письмо с кодом подтверждения на почту, если да, то вводи по 1 цифре в каждом сообщении')
+        # вводит 1ю цифру кода подтверждения
+            confirmation_code1 = self.browser.find_element(By.XPATH,
+                                                           '/html/body/div[2]/div[2]/div/mat-dialog-container/ng-component/bs-dialog/div[2]/div/bs-code-input/form/div/input[3]')
+            confirmation_code1.click()
+            print(Fore.LIGHTBLUE_EX, 'Введите 1ю цифру: ')
+            confirmation_code1.send_keys(input())
+
+        # вводит 2ю цифру кода подтверждения
+            confirmation_code2 = self.browser.find_element(By.XPATH,
+                                                           '/html/body/div[2]/div[2]/div/mat-dialog-container/ng-component/bs-dialog/div[2]/div/bs-code-input/form/div/input[4]')
+            confirmation_code2.click()
+            print(Fore.LIGHTBLUE_EX, 'Введите 2ю цифру: ')
+            confirmation_code2.send_keys(input())
+
+        # вводит 3ю цифру кода подтверждения
+            confirmation_code3 = self.browser.find_element(By.XPATH,
+                                                           '/html/body/div[2]/div[2]/div/mat-dialog-container/ng-component/bs-dialog/div[2]/div/bs-code-input/form/div/input[5]')
+            confirmation_code3.click()
+            print(Fore.LIGHTBLUE_EX, 'Введите 3ю цифру: ')
+            confirmation_code3.send_keys(input())
+
+        # вводит 4ю цифру кода подтверждения
+            confirmation_code4 = self.browser.find_element(By.XPATH,
+                                                           '/html/body/div[2]/div[2]/div/mat-dialog-container/ng-component/bs-dialog/div[2]/div/bs-code-input/form/div/input[6]')
+            confirmation_code4.click()
+            print(Fore.LIGHTBLUE_EX, 'Введите 4ю цифру: ')
+            confirmation_code4.send_keys(input())
+
+            time.sleep(random.randrange(5, 10))
+            self.consent_to_cookies()
+        except Exception as ex:
+            print(Fore.LIGHTRED_EX, 'Не получилось ввести код верификации, открываю эту страницу заново')
+            print(ex)
+            time.sleep(random.randrange(5, 10))
+            self.homepage()
 
     def consent_to_cookies(self):
         """Нажимает на кнопку 'Согласиться с куки' """
@@ -106,10 +150,11 @@ class Beatstars_Bot():
             cookie_consent.click()
             print(Fore.WHITE, 'Согласился с cookie')
             time.sleep(random.randrange(2, 4))
-        except:
-            print(Fore.LIGHTRED_EX, 'Не получилось согласиться с куки, открываю эту страницу заново')
-            time.sleep(10)
-            self.homepage()
+        except Exception as ex:
+            print(Fore.LIGHTRED_EX, 'Не получилось согласиться с куки, пробую ввести код верификации')
+            print(ex)
+            time.sleep(random.randrange(5, 10))
+            self.verification()
 
     def homepage(self):
         """Открывает начальную страницу битстарс"""
@@ -120,11 +165,11 @@ class Beatstars_Bot():
             time.sleep(random.randrange(5, 15))
 
             self.consent_to_cookies()
-        except:
+        except Exception as ex:
             print(Fore.LIGHTRED_EX, 'Снова не получилось согласиться с куки, запускаю алгоритм заново')
-            time.sleep(10)
+            print(ex)
+            time.sleep(random.randrange(5, 10))
             self.oauth_beatstars()
-            # ОСНОВНАЯ РАБОТА БОТА
 
     def open_feed(self):
         """Открывает фид"""
@@ -168,7 +213,6 @@ class Beatstars_Bot():
             time.sleep(random.randrange(10, 15))
 
             self.comments()
-            # self.like()
         except Exception as ex:
             print(Fore.LIGHTRED_EX, 'Не получилось открыть описание бита, запускаю алгоритм заново')
             print(Fore.RED, 'Описание ошибки: ', ex)
@@ -184,8 +228,6 @@ class Beatstars_Bot():
             print(Fore.LIGHTGREEN_EX, 'Поставил', Fore.LIGHTBLUE_EX, 'лайк')
             time.sleep(random.randrange(3, 7))
 
-
-            # self.comments()
             self.cycle_to_liked()
         except Exception as ex:
             print(Fore.LIGHTRED_EX, 'Не получилось поставить лайк, пишу комментарий.')
@@ -195,7 +237,7 @@ class Beatstars_Bot():
     def comment(self):
         """Определяет рандомный комментарий"""
 
-        self.list_comments = random.choice(list)
+        self.list_comment = random.choice(list_comments)
 
     def comments(self):
         """Печатает и отправляет комментарии"""
@@ -207,9 +249,9 @@ class Beatstars_Bot():
             input_comments = self.browser.find_element(By.XPATH,
                                                        '/html/body/mp-root/div/div/ng-component/mp-wrapper-member-track-content/mp-member-content-item-template/bs-container-grid/div[3]/div[2]/mp-comments-panel-box/mp-open-close-panel-template/div/article/div[2]/mp-create-new-comment-input/mp-musician-autocomplete-wrapper/mp-autocomplete-dropdown-template/div/div[2]/mp-compose-new-message-input/form/div[2]/input')
             time.sleep(random.randrange(5, 10))
-            input_comments.send_keys(self.list_comments)
+            input_comments.send_keys(self.list_comment)
             print(Fore.LIGHTGREEN_EX, "Ввёл", Fore.LIGHTBLUE_EX, "комментарий:\n", Fore.LIGHTYELLOW_EX,
-                  self.list_comments)
+                  self.list_comment)
 
             # нажимает на кнопку отправки комментария
             comment_button = self.browser.find_element(By.XPATH,
@@ -265,7 +307,6 @@ class Beatstars_Bot():
             print(Fore.GREEN, 'Нажал на кнопку "Назад"')
             time.sleep(random.randrange(10, 15))
 
-            # self.open_liked() - ничего не должно быть
         except Exception as ex:
             print(Fore.LIGHTRED_EX, 'Не получилось нажать на кнопку "Назад", запускаю алгоритм заново.')
             print(Fore.RED, 'Описание ошибки: ', ex)
@@ -313,7 +354,6 @@ class Beatstars_Bot():
             self.profile_urls = [item.get_attribute('href') for item in elements]
             print(Fore.LIGHTCYAN_EX, 'Спарсил ссылки на профили: ', Fore.LIGHTYELLOW_EX, self.profile_urls)
 
-            # self.cycle_to_liked()
             self.close_menu()
             self.like()
         except Exception as ex:
@@ -376,7 +416,7 @@ class Beatstars_Bot():
                                       '/html/body/mp-root/div/div/ng-component/ng-component/mp-search-v3/div/div/section/mp-search-results/mp-list-card-track/div/mp-list-card-template/div/mp-card-figure-track[1]/mp-card-figure-template/figure/div/div[2]/div[2]/mp-button-play-track-on-algolia-v3/bs-vb-button-play-item').click()
             time.sleep(random.randrange(3, 5))
 
-            for i in range(0, random.randrange(3, 7)):
+            for i in range(0, random.randrange(3, 10)):
                 # открывает описание бита
                 self.browser.find_element(By.XPATH,
                                           '//*[@id="player-container"]/div/div[1]/div[1]/bs-playable-item-info/div[2]/div[1]/a').click()
@@ -392,7 +432,7 @@ class Beatstars_Bot():
                 # переключает на следующий бит
                 self.browser.find_element(By.XPATH,
                                           '/html/body/mp-root/mp-player-wrapper/bs-player/div/div/div[2]/bs-player-next/button').click()
-                print(Fore.GREEN, 'Переключился на следующий бит')
+                print(Fore.CYAN, 'Переключился на следующий бит')
                 time.sleep(random.randrange(5, 10))
         except Exception as ex:
             print(Fore.LIGHTRED_EX, 'Не получилось сделать репост')
@@ -413,14 +453,16 @@ class Beatstars_Bot():
             for main_cycle in range(0, 1):
                 """Выполняется 1 раз в день, засыпает на 8-12 часов"""
 
+                self.sleep()
                 self.repost_beat()
 
-                for number in range(0, random.randrange(3, 7)):
+                for self.number in range(0, random.randrange(4, 6)):
+
                     """Выполняется 3, 7 раз в день, каждый раз засыпает на 1-1,5 часа"""
 
                     self.sleep()
 
-                    for i in range(0, random.randrange(7, 12)):
+                    for i in range(0, random.randrange(10, 16)):
                         """Сам цикл, выполняется 4-7 раз за 1 цикл"""
 
                         print(Fore.LIGHTMAGENTA_EX, 'Цикл №', i + 1, 'начал свою работу!')
@@ -434,11 +476,17 @@ class Beatstars_Bot():
                     time.sleep(self.sleep_1_cycle)
 
                 self.repost_beat()
-
+                print(Fore.LIGHTYELLOW_EX, 'Бот провёл', self.number, 'циклов за день!')
             print(Fore.LIGHTMAGENTA_EX, 'Боту тоже нужен сон!'
-                                         'Он проснётся через', Fore.LIGHTRED_EX, self.sleep_day_cycle, Fore.LIGHTMAGENTA_EX, 'секунд')
+                  'Он проснётся через', Fore.LIGHTRED_EX, self.sleep_day_cycle, Fore.LIGHTMAGENTA_EX, 'секунд')
             time.sleep(self.sleep_day_cycle)
 
+
+print(Fore.LIGHTYELLOW_EX, 'Введите логин: ')
+username = input()
+
+print(Fore.LIGHTYELLOW_EX, 'Введите пароль: ')
+password = input()
 
 BS_bot = Beatstars_Bot(username, password)
 BS_bot.start_bot()
