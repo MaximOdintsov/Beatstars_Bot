@@ -417,7 +417,7 @@ class BeatstarsBot:
                                       '/html/body/mp-root/div/div/ng-component/ng-component/mp-search-v3/div/div/section/mp-search-results/mp-list-card-track/div/mp-list-card-template/div/mp-card-figure-track[1]/mp-card-figure-template/figure/div/div[2]/div[2]/mp-button-play-track-on-algolia-v3/bs-vb-button-play-item').click()
             time.sleep(random.randrange(3, 5))
 
-            for i in range(0, random.randrange(3, 10)):
+            for i in range(0, random.randrange(2, 5)):
                 # открывает описание бита
                 self.browser.find_element(By.XPATH,
                                           '//*[@id="player-container"]/div/div[1]/div[1]/bs-playable-item-info/div[2]/div[1]/a').click()
