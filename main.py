@@ -3,8 +3,12 @@ import os
 from BeatstarsBot import Beatstars_Bot
 import telebot
 import logging
-from config import *
 from flask import Flask, request
+
+
+BOT_TOKEN = "5411402973:AAGhVaeouBYSFIAGOHshoBBMak3poZ5HxKI"
+BOT_URL = "https://beatstarsbot.herokuapp.com/"
+
 
 bot = telebot.TeleBot(BOT_TOKEN)
 server = Flask(__name__)
@@ -12,10 +16,10 @@ logger = telebot.logger
 logger.setLevel(logging.DEBUG)
 
 
-if __name__ == "__main__":
-    bot.remove_webhook()
-    bot.set_webhook(url=APP_URL)
-    server.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
+# if __name__ == "__main__":
+#     bot.remove_webhook()
+#     bot.set_webhook(url=APP_URL)
+#     server.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
 
 
 @bot.message_handler(commands=["start"])
