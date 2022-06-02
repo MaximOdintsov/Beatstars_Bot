@@ -1,2 +1,4 @@
 selenium
 colorama
+pyTelegramBotAPI
+Flask
