@@ -3,6 +3,7 @@ import random
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from comments import list_comments
+from database import *
 
 # from threading import Thread
 # from selenium.webdriver.common.keys import Keys
@@ -11,7 +12,7 @@ from comments import list_comments
 from colorama import Fore, Back
 
 
-class Beatstars_Bot:
+class BeatstarsBot:
     """Класс работы бота"""
 
     def __init__(self, log, pas):
@@ -482,14 +483,8 @@ class Beatstars_Bot:
             time.sleep(self.sleep_day_cycle)
 
 
-print(Fore.LIGHTYELLOW_EX, 'Введите логин: ')
-username = input()
-
-print(Fore.LIGHTYELLOW_EX, 'Введите пароль: ')
-password = input()
-
-BS_bot = Beatstars_Bot(username, password)
-BS_bot.start_bot()
+bot = BeatstarsBot(username, password)
+bot.start_bot()
 
 # запускает многопоточность
 #
